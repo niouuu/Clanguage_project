@@ -25,6 +25,7 @@
 /* Begin PBXFileReference section */
 		7DE480832A212FE90079BFE9 /* ergasia_git */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ergasia_git; sourceTree = BUILT_PRODUCTS_DIR; };
 		7DE480862A212FE90079BFE9 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		7DF2C4E72A224F2300BDE7A3 /* metavlhtes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = metavlhtes.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +59,7 @@
 			isa = PBXGroup;
 			children = (
 				7DE480862A212FE90079BFE9 /* main.c */,
+				7DF2C4E72A224F2300BDE7A3 /* metavlhtes.h */,
 			);
 			path = ergasia_git;
 			sourceTree = "<group>";
