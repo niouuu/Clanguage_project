@@ -16,7 +16,24 @@
 unsigned int* random_number_seed(void){
    return &random1;
 }
+//function to helps me cancel the right order
+void cancelation_id(int id){
+    cancel_id=id;
+}
+//sales function,helps me count the summary of plain,special pizzas and the profit
 
+void sales(int pizzas[],int pizza){
+    for (int i=0; i<pizza; i++) {
+        if(pizzas[i]==0){
+            sum_of_plainpizzas++;
+            total_profit +=Cplain;
+        }else{
+            sum_of_specialpizzas++;
+            total_profit +=Cspecial;
+        }
+        
+    }
+}
 void *order(void *x){
     
     
@@ -27,7 +44,7 @@ void *order(void *x){
     //thats why i created a function called random_number_seed
     unsigned int random_number_pizza=rand_r(random_number_seed())%Norderhigh+Norderlow;
     int pizzas[random_number_pizza];
-    //analoga me to poses pitses thelei,briskoume poies einai aples kai poies special
+    
     for (int i=0; i<random_number_pizza; i++) {
         
         float possibility_plain=(float)rand_r(random_number_seed())/RAND_MAX;
@@ -43,7 +60,27 @@ void *order(void *x){
         
         
     }
+    int paying_time=rand_r(random_number_seed())%Torderlow+Torderhigh;//I used rand_r to create a random amount of time to wait till the client uses his card
+    sleep(paying_time);
+    //then i used another possibility to find if he had enough money for the order
+    float possibility_failed=(float)rand_r(random_number_seed())/RAND_MAX;
     
+    if(possibility_failed<=0.1){
+        //if he didnt have enough money,the order is failed and we print a message
+        printf("Order with number %d failed\n",id_nhma);
+        unsuccesfull_orders++;
+        cancelation_id(id_nhma);
+        pthread_mutex_unlock(&lock);
+        //we use return so the order finishes completely and goes back to where it was called
+        return 0;
+    }else{
+        //if the client had enough money,then the order is sumbitted
+        printf("Order with number %d submitted\n",id_nhma);
+        succesfull_orders++;
+        sales(pizzas,random_number_pizza);
+        
+    }
+
     return 0;
 }
 
