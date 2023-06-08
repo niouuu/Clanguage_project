@@ -34,6 +34,52 @@ void sales(int pizzas[],int pizza){
         
     }
 }
+void baking(int pizzas,int id){
+    while(Noven<pizzas){
+        printf("Not enough ovens..please wait \n");
+        pthread_cond_wait(&cond, &lock);
+    }
+    pthread_mutex_unlock(&lock);
+    Noven = Noven-pizzas;
+    printf("Baking started for order %d,diathesimoi fournoi %d\n",id,Noven);
+    sleep(Tbake);
+    pthread_mutex_lock(&lock);
+    
+    Noven = Noven+pizzas;
+    
+   
+    pthread_cond_signal(&cond);
+    pthread_mutex_unlock(&lock);
+    clock_gettime(CLOCK_REALTIME, &cold_time_start);
+   
+}
+
+void preparation(int pizzas,int id){
+    while(Ncook<1){
+        printf("Not enough cooks..please wait \n");
+        pthread_cond_wait(&cond, &lock);
+    }
+    pthread_mutex_unlock(&lock);
+    
+    Ncook --;
+    
+    printf("Preparation started for the order\n");
+    for(int i=0;i<pizzas;i++){
+        sleep(Tprep);
+        printf("number %d pizza prepared for order %d \n",i+1,id);
+    }
+    pthread_mutex_lock(&lock);
+    
+    Ncook++;
+    pthread_cond_signal(&cond);
+    pthread_mutex_unlock(&lock);
+    baking(pizzas,id);
+}
+
+
+
+
+
 void *order(void *x){
     
     
