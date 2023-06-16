@@ -9,5 +9,5 @@ Delivery: The system ensures efficient delivery of the baked orders to the custo
 Mutual Exclusion: Mutexes are used to ensure that only one thread can access a shared resource at a time, preventing conflicts.
 Synchronization: Condition variables are employed to synchronize the threads, allowing them to wait or signal each other when necessary.
 
-Contributors
+Contributor:
 ANTONIOU NIKOLAOS-Undergraduate student in the Athens university of economics and business,in the department of informatics
