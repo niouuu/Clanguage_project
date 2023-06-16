@@ -34,6 +34,72 @@ void sales(int pizzas[],int pizza){
         
     }
 }
+
+void delivery(int id){
+    while(Ndeliverer<1){
+        printf("No delivery guy available\n");
+        pthread_cond_wait(&cond, &lock);
+    }
+    pthread_mutex_unlock(&lock);
+    Ndeliverer--;
+    printf("DELIVERY ORDER %d \n",id);
+    unsigned int delivery_time=rand_r(random_number_seed())%Tdelhigh+Tdellow;
+    sleep(delivery_time*2);
+    pthread_mutex_lock(&lock);
+    
+    Ndeliverer++;
+    
+    
+    pthread_cond_signal(&cond);
+    pthread_mutex_unlock(&lock);
+    clock_gettime(CLOCK_REALTIME, &finish_time2);
+    double z  = (finish_time2.tv_sec - start_time2.tv_sec) ;
+    
+    printf("Order with number %d delivered in %f minutes \n",id,z);
+    clock_gettime(CLOCK_REALTIME, &cold_time_finish);
+    order_time_sum=order_time_sum+z;
+    if(order_max_time<z){
+        order_max_time=order_time_sum;
+    }
+    double z2=(cold_time_finish.tv_sec - cold_time_start.tv_sec) ;
+    cold_time_sum=cold_time_sum+z2;
+    if(cold_max_time<=z2){
+        cold_max_time=cold_time_sum;
+    }
+}
+void packing(int id,int pizzas){
+    
+    while(Npacker<1){
+        printf("Not enough packers..please wait \n");
+        pthread_cond_wait(&cond, &lock);
+    }
+    pthread_mutex_unlock(&lock);
+    Npacker--;
+    
+    
+    for(int i=0;i<pizzas;i++){
+        sleep(Tpack);
+    }
+    pthread_mutex_lock(&lock);
+    
+    Npacker++;
+    
+   
+    pthread_cond_signal(&cond);
+    pthread_mutex_unlock(&lock);
+    
+    clock_gettime(CLOCK_REALTIME, &finish_time1);
+    double z  = (finish_time1.tv_sec - start_time1.tv_sec);
+
+    printf("Order with number %d got ready in %f minutes \n",id,z);
+    
+    delivery(id);
+    
+}
+
+
+
+
 void baking(int pizzas,int id){
     while(Noven<pizzas){
         printf("Not enough ovens..please wait \n");
@@ -51,6 +117,7 @@ void baking(int pizzas,int id){
     pthread_cond_signal(&cond);
     pthread_mutex_unlock(&lock);
     clock_gettime(CLOCK_REALTIME, &cold_time_start);
+    packing(id,pizzas);
    
 }
 
@@ -117,8 +184,8 @@ void *order(void *x){
         unsuccesfull_orders++;
         cancelation_id(id_nhma);
         pthread_mutex_unlock(&lock);
-        //we use return so the order finishes completely and goes back to where it was called
-        return 0;
+        
+        
     }else{
         //if the client had enough money,then the order is sumbitted
         printf("Order with number %d submitted\n",id_nhma);
@@ -126,6 +193,8 @@ void *order(void *x){
         sales(pizzas,random_number_pizza);
         
     }
+    pthread_mutex_unlock(&lock);
+    preparation(random_number_pizza,id_nhma);
 
     return 0;
 }
@@ -148,15 +217,35 @@ int main(int argc, const char * argv[]){
     for (int i=0; i<Ncust;i++) {
         id[i]=i+1;
         printf("Thread with id %d, created\n",i+1);
+        clock_gettime(CLOCK_REALTIME, &start_time1);
+        clock_gettime(CLOCK_REALTIME, &start_time2);
+     
+        resources=pthread_create(&threads[i], NULL, order, &id[i]);
+        int random_sleep=rand_r(&random1)%Torderhigh+Torderlow;
+        sleep(random_sleep);
         
-
-        resources=pthread_create(&threads[i], NULL, order, &id[i]);//thread creation and order function called through pthread_create
-        
-        
-
+        if(cancel_id!=0){
+            pthread_cancel(threads[cancel_id-1]);
+            printf("cancelled %d \n",cancel_id);
+            cancel_id=0;
+            
+        }
     }
     for (int i = 0; i < Ncust; i++) {
         pthread_join(threads[i], NULL);
     }
+    printf("Total profit: %d euros\n",total_profit);
+    printf("Total plain pizzas sold: %d\n",sum_of_plainpizzas);
+    printf("Total special pizzas sold: %d\n",sum_of_specialpizzas);
+    printf("Successfull orders: %d\n",succesfull_orders);
+    printf("Unsuccessfull orders: %d\n",unsuccesfull_orders);
+    printf("Average customer service time:  %d \n",order_time_sum/succesfull_orders);
+    printf("Max customer service  time:  %d \n",order_max_time);
+    printf("Average cold time:  %d \n",cold_time_sum/succesfull_orders);
+    printf("Max cold time:  %d \n",cold_max_time);
+    
+    pthread_cancel(threads[Ncust]);
+    pthread_mutex_destroy(&lock);
+    pthread_cond_destroy(&cond);
     return 0;
 }
